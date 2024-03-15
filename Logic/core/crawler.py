@@ -15,7 +15,7 @@ class IMDbCrawler:
     }
     top_250_URL = 'https://www.imdb.com/chart/top/'
 
-    def __init__(self, crawling_threshold=1000):
+    def __init__(self, crawling_threshold=1100):
         """
         Initialize the crawler
 
@@ -52,13 +52,12 @@ class IMDbCrawler:
         """
         Save the crawled files into json
         """
-        not_crawled_list = list(self.not_crawled)
 
         with open('../IMDB_crawled.json', 'w') as f:
             json.dump(self.crawled, f)
 
         with open('../IMDB_not_crawled.json', 'w') as f:
-            json.dump(not_crawled_list, f)
+            json.dump(list(self.not_crawled), f)
 
     def read_from_file_as_json(self):
         """
@@ -66,12 +65,18 @@ class IMDbCrawler:
         """
 
         with open('../IMDB_crawled.json', 'r') as f:
-            data = json.load(f)
-            self.crawled = data
+            Crawl = json.load(f)
+            self.crawled = Crawl
 
         with open('../IMDB_not_crawled.json', 'r') as f:
-            data = json.load(f)
-            self.not_crawled = data
+            notCrawl = json.load(f)
+            self.not_crawled = notCrawl
+
+        for entry in Crawl:
+            self.added_ids.add(entry['id'])
+
+        for entry in notCrawl:
+            self.added_ids.add(self.get_id_from_URL(entry))
 
     def crawl(self, URL):
         """
@@ -150,12 +155,6 @@ class IMDbCrawler:
                     wait(futures)
                     futures = []
             wait(futures)
-
-        # while len(self.crawled) < self.crawling_threshold and self.not_crawled:
-          # URL = self.not_crawled.popleft()
-        # futures.append(executor.submit(self.crawl_page_info, URL))
-          # self.crawl_page_info(URL)
-
 
     def crawl_page_info(self, URL):
         """
@@ -239,7 +238,6 @@ class IMDbCrawler:
             movie_id = url.split('/')[-2]
             summary_link = f'https://www.imdb.com/title/{movie_id}/plotsummary'
             return summary_link
-            pass
         except:
             print("failed to get summary link")
 
@@ -252,8 +250,8 @@ class IMDbCrawler:
         """
         try:
             movie_id = url.split('/')[-2]
-            summary_link = f'https://www.imdb.com/title/{movie_id}/reviews'
-            return summary_link
+            review_link = f'https://www.imdb.com/title/{movie_id}/reviews'
+            return review_link
         except:
             print("failed to get review link")
 
@@ -601,7 +599,6 @@ class IMDbCrawler:
             language_info = data['props']['pageProps']['mainColumnData']['spokenLanguages']['spokenLanguages']
             languages = [language['text'] for language in language_info]
             return languages
-
         except:
             print("failed to get languages")
             return []
@@ -647,7 +644,6 @@ class IMDbCrawler:
             data = json.loads(budget_tag.contents[0])
             budget = data['props']['pageProps']['mainColumnData']['productionBudget']['budget']['amount']
             return str(budget)
-
         except:
             print("failed to get budget")
             return ''
@@ -672,14 +668,13 @@ class IMDbCrawler:
             if gross_worldwide is not None:
               return str(gross_worldwide)
             return ''
-
         except:
             print("failed to get gross worldwide")
             return ''
 
 
 def main():
-    imdb_crawler = IMDbCrawler(crawling_threshold=1000)
+    imdb_crawler = IMDbCrawler(crawling_threshold=1100)
     # imdb_crawler.read_from_file_as_json()
     imdb_crawler.start_crawling()
     imdb_crawler.write_to_file_as_json()

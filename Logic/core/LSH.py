@@ -34,7 +34,11 @@ class MinHashLSH:
         set
             A set of shingles.
         """
-        shingles = None
+        shingles = set()
+
+        for i in range(len(document) - k + 1):
+            shingles.add(document[i:i + k])
+
         return shingles
 
     def build_characteristic_matrix(self):
@@ -46,8 +50,8 @@ class MinHashLSH:
         numpy.ndarray
             The binary characteristic matrix.
         """
-        # TODO
-        return
+        characteristic_matrix = None
+        return characteristic_matrix
 
     def min_hash_signature(self):
         """
@@ -110,8 +114,13 @@ class MinHashLSH:
         float
             Jaccard score.
         """
-        # TODO
-        pass
+        intersection = len(first_set.intersection(second_set))
+        union = len(first_set.union(second_set))
+
+        if union == 0:
+            return 0.0
+
+        return intersection / union
 
     def jaccard_similarity_test(self, buckets, all_documents):
         """

@@ -1,4 +1,7 @@
-
+import re
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer, WordNetLemmatizer
 
 class Preprocessor:
 
@@ -11,9 +14,8 @@ class Preprocessor:
         documents : list
             The list of documents to be preprocessed, path to stop words, or other parameters.
         """
-        # TODO
         self.documents = documents
-        self.stopwords = []
+        self.stopwords = set(stopwords.words('english'))
 
     def preprocess(self):
         """
@@ -21,11 +23,49 @@ class Preprocessor:
 
         Returns
         ----------
-        str
+        List[str]
             The preprocessed documents.
         """
-         # TODO
-        return
+       # preprocessed_documents = []
+       # for doc in self.documents:
+        #    preprocessed_doc = {}
+         #   for key, value in doc.items():
+          #      preprocessed_doc[key] = self.preprocess_attribute(value)
+           # preprocessed_documents.append(preprocessed_doc)
+        # return preprocessed_documents
+        preprocessed_documents = []
+        for document in self.documents:
+            preprocessed_value = self.normalize(document)
+            preprocessed_value = self.remove_links(preprocessed_value)
+            preprocessed_value = self.remove_punctuations(preprocessed_value)
+            preprocessed_value = self.tokenize(preprocessed_value)
+            preprocessed_value = self.remove_stopwords(preprocessed_value)
+            preprocessed_documents.append(preprocessed_value)
+        return preprocessed_documents
+
+    def preprocess_attribute(self, attribute):
+        """
+        Preprocess a single attribute.
+
+        Parameters
+        ----------
+        attribute : str or List[str] or None
+            The attribute value to be preprocessed.
+
+        Returns
+        ----------
+        str or List[str] or None
+            The preprocessed attribute value.
+        """
+        if isinstance(attribute, str):
+            attribute = self.normalize(attribute)
+            attribute = self.remove_links(attribute)
+            attribute = self.remove_punctuations(attribute)
+            attribute = self.tokenize(attribute)
+            attribute = self.remove_stopwords(attribute)
+        elif isinstance(attribute, list):
+            attribute = [self.preprocess_attribute(item) for item in attribute]
+        return attribute
 
     def normalize(self, text: str):
         """
@@ -41,8 +81,7 @@ class Preprocessor:
         str
             The normalized text.
         """
-        # TODO
-        return
+        return text.lower()
 
     def remove_links(self, text: str):
         """
@@ -59,8 +98,10 @@ class Preprocessor:
             The text with links removed.
         """
         patterns = [r'\S*http\S*', r'\S*www\S*', r'\S+\.ir\S*', r'\S+\.com\S*', r'\S+\.org\S*', r'\S*@\S*']
-        # TODO
-        return
+
+        for pattern in patterns:
+            text = re.sub(pattern, '', text)
+        return text
 
     def remove_punctuations(self, text: str):
         """
@@ -76,8 +117,7 @@ class Preprocessor:
         str
             The text with punctuations removed.
         """
-        # TODO
-        return
+        return re.sub(r'[^\w\s]', '', text)
 
     def tokenize(self, text: str):
         """
@@ -93,10 +133,9 @@ class Preprocessor:
         list
             The list of words.
         """
-        # TODO
-        return
+        return word_tokenize(text)
 
-    def remove_stopwords(self, text: str):
+    def remove_stopwords(self, tokens: str):
         """
         Remove stopwords from the text.
 
@@ -110,6 +149,6 @@ class Preprocessor:
         list
             The list of words with stopwords removed.
         """
-        # TODO
-        return
-
+        filtered_tokens = [token for token in tokens if token.lower() not in self.stopwords]
+        filtered_tokens = ' '.join(filtered_tokens)
+        return filtered_tokens

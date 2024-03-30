@@ -55,11 +55,12 @@ class Index:
             document_id = document['id']
             stars = document['stars']
             for star in stars:
-                if star not in star_index:
-                    self.terms.append(star)
-                    star_index[star] = {}
-                star_index[star][document_id] = stars.count(star)
-
+                star = star.lower()
+                parts = star.split()
+                for part in parts:
+                    if part not in star_index:
+                        star_index[part] = {}
+                    star_index[part][document_id] = parts.count(part)
         return star_index
 
     def index_genres(self):
@@ -78,6 +79,7 @@ class Index:
             document_id = document['id']
             genres = document['genres']
             for genre in genres:
+                genre = genre.lower()
                 if genre not in genre_index:
                     self.terms.append(genre)
                     genre_index[genre] = {}
@@ -158,25 +160,20 @@ class Index:
         """
         document_id = document['id']
 
-        # Add document to the DOCUMENTS index
         self.index[Indexes.DOCUMENTS.value][document_id] = document
 
-        # Add document to the STARS index
         stars = document.get('stars', [])
-        print(stars)
         for star in stars:
             if star not in self.index[Indexes.STARS.value]:
                 self.index[Indexes.STARS.value][star] = {}
             self.index[Indexes.STARS.value][star][document_id] = stars.count(star)
 
-        # Add document to the GENRES index
         genres = document.get('genres', [])
         for genre in genres:
             if genre not in self.index[Indexes.GENRES.value]:
                 self.index[Indexes.GENRES.value][genre] = {}
             self.index[Indexes.GENRES.value][genre][document_id] = genres.count(genre)
 
-        # Add document to the SUMMARIES index
         summaries = document.get('summaries', [])
         for summary in summaries:
             terms = summary.split()
@@ -195,10 +192,42 @@ class Index:
         document_id : str
             ID of the document to remove from all the indexes
         """
-        for index_type in self.index.keys():
-            for term in self.index[index_type].keys():
-                if document_id in self.index[index_type][term]:
-                    del self.index[index_type][term][document_id]
+
+        if document_id in self.index['documents']:
+            del self.index['documents'][document_id]
+
+        keys_to_delete = []
+        for x in self.index['stars']:
+            for movie in self.index['stars'][x]:
+                if document_id == movie:
+                    keys_to_delete.append(x)
+                    break
+
+        for key in keys_to_delete:
+            del self.index['stars'][key][document_id]
+
+        keys_to_delete = []
+        for x in self.index['genres']:
+            for movie in self.index['genres'][x]:
+                if document_id == movie:
+                    keys_to_delete.append(x)
+                    break
+
+        for key in keys_to_delete:
+            del self.index['genres'][key][document_id]
+
+        keys_to_delete = []
+        for x in self.index['summaries']:
+            for movie in self.index['summaries'][x]:
+                if document_id == movie:
+                    keys_to_delete.append(x)
+                    break
+
+        for key in keys_to_delete:
+            del self.index['summaries'][key][document_id]
+
+
+
 
     def check_add_remove_is_correct(self):
         """
@@ -212,9 +241,11 @@ class Index:
             'summaries': ['good']
         }
 
+
         index_before_add = copy.deepcopy(self.index)
         self.add_document_to_index(dummy_document)
         index_after_add = copy.deepcopy(self.index)
+
 
         if index_after_add[Indexes.DOCUMENTS.value]['100'] != dummy_document:
             print('Add is incorrect, document')
@@ -271,17 +302,20 @@ class Index:
             os.makedirs(path)
 
         if index_type is None:
-            index_to_store = self.index
+            for index_type, index_data in self.index.items():
+                filename = index_type + '_tiered' + '_index.json'
+                with open(os.path.join(path, filename), 'w') as file:
+                    json.dump({index_type: index_data}, file, indent=4)
 
         elif index_type not in self.index:
             raise ValueError('Invalid index type')
 
         else:
-            index_to_store = {index_type: self.index[index_type]}
+            index_to_store = self.index[index_type]
 
-        with open(os.path.join(path, 'index.json'), 'w') as f:
-            print('ok')
-            json.dump(index_to_store, f)
+            with open(os.path.join(path, index_type + '_' + 'index.json'), 'w') as f:
+                print('ok')
+                json.dump(index_to_store, f)
 
     def load_index(self, path: str):
         """
@@ -383,6 +417,12 @@ with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\IMDB_crawled(Wi
     movies_dataset = json.load(f)
 
 index = Index(movies_dataset)
+#index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index')
+# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type = Indexes.DOCUMENTS.value)
+#index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type = Indexes.STARS.value)
+#index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type = Indexes.GENRES.value)
+#index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type = Indexes.SUMMARIES.value)
+#index.check_add_remove_is_correct()
 with open('../mm.json', 'w') as f:
     json.dump(index.terms, f)
 

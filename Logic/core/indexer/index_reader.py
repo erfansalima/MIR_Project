@@ -1,4 +1,4 @@
-from .indexes_enum import Indexes,Index_types
+from Logic.core.indexer.indexes_enum import Indexes, Index_types
 import json
 
 class Index_reader:
@@ -36,8 +36,8 @@ class Index_reader:
 
         absolute_path = absolute_path + "_index.json"
         
-    #    with open(absolute_path, 'r') as file:
-     #       return json.load(file)
+        with open(absolute_path, 'r') as file:
+            return json.load(file)
         
     
         

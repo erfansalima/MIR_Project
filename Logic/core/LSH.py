@@ -1,7 +1,9 @@
 import numpy as np
 import itertools
 import random
+import json
 
+random.seed(1200)
 
 class MinHashLSH:
     def __init__(self, documents, num_hashes):
@@ -50,7 +52,21 @@ class MinHashLSH:
         numpy.ndarray
             The binary characteristic matrix.
         """
-        characteristic_matrix = None
+        shingle_sets = [self.shingle_document(doc) for doc in self.documents]
+
+        all_shingles = set().union(*shingle_sets)
+        shingle_indices = {shingle: index for index, shingle in enumerate(all_shingles)}
+
+        num_documents = len(self.documents)
+        num_shingles = len(all_shingles)
+        characteristic_matrix = np.zeros((num_documents, num_shingles), dtype=int)
+
+        for i, doc in enumerate(self.documents):
+            shingles = self.shingle_document(doc)
+            for shingle in shingles:
+                j = shingle_indices[shingle]
+                characteristic_matrix[i, j] = 1
+
         return characteristic_matrix
 
     def min_hash_signature(self):
@@ -62,8 +78,24 @@ class MinHashLSH:
         numpy.ndarray
             The Min-Hash signatures matrix.
         """
-        # TODO
-        return
+        characteristic_matrix = self.build_characteristic_matrix()
+
+        num_documents, num_shingles = characteristic_matrix.shape
+        hash_functions = []
+        for _ in range(self.num_hashes):
+            a = random.randint(1, num_shingles * 30)
+            b = random.randint(1, num_shingles * 30)
+            hash_functions.append((a, b))
+
+        signatures = np.full((self.num_hashes, characteristic_matrix.shape[0]), np.inf)
+
+        for i in range(num_shingles):
+            hash_values = [((a * i + b) % num_shingles) for a, b in hash_functions]
+            for j in range(num_documents):
+                if characteristic_matrix[j, i] == 1:
+                    signatures[:, j] = np.minimum(signatures[:, j], hash_values)
+
+        return signatures
 
     def lsh_buckets(self, signature, bands=10, rows_per_band=10):
         """
@@ -83,8 +115,15 @@ class MinHashLSH:
         dict
             A dictionary mapping bucket IDs to lists of document indices.
         """
-        # TODO
-        return
+        buckets = {}
+
+        for band in range(bands):
+            band_signatures = signature[band * rows_per_band: (band + 1) * rows_per_band]
+            band_hashes = [hash(tuple(row)) for row in band_signatures.T]
+            for index, hash_value in enumerate(band_hashes):
+                buckets.setdefault(hash_value, []).append(index)
+
+        return buckets
 
     def perform_lsh(self):
         """
@@ -95,8 +134,9 @@ class MinHashLSH:
         dict
             A dictionary mapping bucket IDs to lists of document indices.
         """
-        # TODO
-        return
+        signature = self.min_hash_signature()
+        buckets = self.lsh_buckets(signature)
+        return buckets
 
     def jaccard_score(self, first_set, second_set):
         """
@@ -169,3 +209,11 @@ class MinHashLSH:
 
         # a good score is around 0.8
         print("your final score in near duplicate detection:", correct_near_duplicates / all_near_duplicates)
+
+
+with open('D:/uni/term6/my/mir/project/mir_project/logic/core/LSHFakeData.json', 'r') as f:
+    movies = json.load(f)
+
+docs = [' '.join(movie['summaries']) for movie in movies]
+minHashLSH = MinHashLSH(docs, 100)
+minHashLSH.jaccard_similarity_test(minHashLSH.perform_lsh(), docs)

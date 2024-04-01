@@ -54,13 +54,16 @@ class Index:
         for document in self.preprocessed_documents:
             document_id = document['id']
             stars = document['stars']
+            names = [word.lower() for name in stars for word in name.split()]
             for star in stars:
                 star = star.lower()
                 parts = star.split()
                 for part in parts:
+                    self.terms.append(part)
                     if part not in star_index:
                         star_index[part] = {}
-                    star_index[part][document_id] = parts.count(part)
+                    star_index[part][document_id] = names.count(part)
+
         return star_index
 
     def index_genres(self):
@@ -79,11 +82,10 @@ class Index:
             document_id = document['id']
             genres = document['genres']
             for genre in genres:
-                genre = genre.lower()
                 if genre not in genre_index:
-                    self.terms.append(genre)
-                    genre_index[genre] = {}
-                genre_index[genre][document_id] = genres.count(genre)
+                    self.terms.append(genre.lower())
+                    genre_index[genre.lower()] = {}
+                genre_index[genre.lower()][document_id] = genres.count(genre)
 
         return genre_index
 
@@ -97,20 +99,8 @@ class Index:
             The index of the documents based on the summaries. You should also store each terms' tf in each document.
             So the index type is: {term: {document_id: tf}}
         """
-    #    summary_index = {}
-#
- #       for document in self.preprocessed_documents:
-  #          document_id = document['id']
-   #         summary = document['summaries']
-    #        terms = summary.split()
-     #       for term in terms:
-      #          if term not in summary_index:
-       #             summary_index[term] = {}
-        #        summary_index[term][document_id] = terms.count(term)
-
-        #return summary_index
-
         index = {}
+
         for doc in self.preprocessed_documents:
             doc_id = doc['id']
             summaries = doc.get('summaries', [])
@@ -226,9 +216,6 @@ class Index:
         for key in keys_to_delete:
             del self.index['summaries'][key][document_id]
 
-
-
-
     def check_add_remove_is_correct(self):
         """
         Check if the add and remove is correct
@@ -241,36 +228,39 @@ class Index:
             'summaries': ['good']
         }
 
-
         index_before_add = copy.deepcopy(self.index)
         self.add_document_to_index(dummy_document)
         index_after_add = copy.deepcopy(self.index)
-
 
         if index_after_add[Indexes.DOCUMENTS.value]['100'] != dummy_document:
             print('Add is incorrect, document')
             return
 
-        if (set(index_after_add[Indexes.STARS.value]['tim']).difference(set(index_before_add[Indexes.STARS.value]['tim']))
+        if (set(index_after_add[Indexes.STARS.value]['tim']).difference(
+                set(index_before_add[Indexes.STARS.value]['tim']))
                 != {dummy_document['id']}):
             print('Add is incorrect, tim')
             return
 
-        if (set(index_after_add[Indexes.STARS.value]['henry']).difference(set(index_before_add[Indexes.STARS.value]['henry']))
+        if (set(index_after_add[Indexes.STARS.value]['henry']).difference(
+                set(index_before_add[Indexes.STARS.value]['henry']))
                 != {dummy_document['id']}):
             print('Add is incorrect, henry')
             return
-        if (set(index_after_add[Indexes.GENRES.value]['drama']).difference(set(index_before_add[Indexes.GENRES.value]['drama']))
+        if (set(index_after_add[Indexes.GENRES.value]['drama']).difference(
+                set(index_before_add[Indexes.GENRES.value]['drama']))
                 != {dummy_document['id']}):
             print('Add is incorrect, drama')
             return
 
-        if (set(index_after_add[Indexes.GENRES.value]['crime']).difference(set(index_before_add[Indexes.GENRES.value]['crime']))
+        if (set(index_after_add[Indexes.GENRES.value]['crime']).difference(
+                set(index_before_add[Indexes.GENRES.value]['crime']))
                 != {dummy_document['id']}):
             print('Add is incorrect, crime')
             return
 
-        if (set(index_after_add[Indexes.SUMMARIES.value]['good']).difference(set(index_before_add[Indexes.SUMMARIES.value]['good']))
+        if (set(index_after_add[Indexes.SUMMARIES.value]['good']).difference(
+                set(index_before_add[Indexes.SUMMARIES.value]['good']))
                 != {dummy_document['id']}):
             print('Add is incorrect, good')
             return
@@ -411,18 +401,17 @@ class Index:
             print('Indexing is wrong')
             return False
 
-# TODO: Run the class with needed parameters, then run check methods and finally report the results of check methods
 
+# TODO: Run the class with needed parameters, then run check methods and finally report the results of check methods
 with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\IMDB_crawled(Without null).json', 'r') as f:
     movies_dataset = json.load(f)
 
 index = Index(movies_dataset)
-#index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index')
-# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type = Indexes.DOCUMENTS.value)
-#index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type = Indexes.STARS.value)
-#index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type = Indexes.GENRES.value)
-#index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type = Indexes.SUMMARIES.value)
-#index.check_add_remove_is_correct()
-with open('../mm.json', 'w') as f:
+# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index')
+# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.DOCUMENTS.value)
+# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.STARS.value)
+# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.GENRES.value)
+# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.SUMMARIES.value)
+# index.check_add_remove_is_correct()
+with open('../terms.json', 'w') as f:
     json.dump(index.terms, f)
-

@@ -3,6 +3,7 @@ import os
 import json
 import copy
 from indexes_enum import Indexes
+from tiered_index import Tiered_index
 
 
 class Index:
@@ -292,10 +293,7 @@ class Index:
             os.makedirs(path)
 
         if index_type is None:
-            for index_type, index_data in self.index.items():
-                filename = index_type + '_tiered' + '_index.json'
-                with open(os.path.join(path, filename), 'w') as file:
-                    json.dump({index_type: index_data}, file, indent=4)
+            tiered = Tiered_index(path="index/")
 
         elif index_type not in self.index:
             raise ValueError('Invalid index type')
@@ -304,7 +302,6 @@ class Index:
             index_to_store = self.index[index_type]
 
             with open(os.path.join(path, index_type + '_' + 'index.json'), 'w') as f:
-                print('ok')
                 json.dump(index_to_store, f)
 
     def load_index(self, path: str):
@@ -407,7 +404,7 @@ with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\IMDB_crawled(Wi
     movies_dataset = json.load(f)
 
 index = Index(movies_dataset)
-# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index')
+index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index')
 # index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.DOCUMENTS.value)
 # index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.STARS.value)
 # index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.GENRES.value)

@@ -1,9 +1,9 @@
 import json
 import numpy as np
-from preprocess import Preprocessor
-from scorer import Scorer
-from indexer.indexes_enum import Indexes, Index_types
-from indexer.index_reader import Index_reader
+from Logic.core.preprocess import Preprocessor
+from Logic.core.scorer import Scorer
+from Logic.core.indexer.indexes_enum import Indexes, Index_types
+from Logic.core.indexer.index_reader import Index_reader
 
 
 class SearchEngine:
@@ -12,7 +12,7 @@ class SearchEngine:
         Initializes the search engine.
 
         """
-        path = 'indexer/index/'
+        path = 'D:/uni/term6/my/mir/project/mir_project/Logic/core/indexer/index/'
         self.document_indexes = {
             Indexes.STARS: Index_reader(path, Indexes.STARS),
             Indexes.GENRES: Index_reader(path, Indexes.GENRES),

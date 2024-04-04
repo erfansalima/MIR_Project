@@ -37,10 +37,9 @@ class MinHashLSH:
             A set of shingles.
         """
         shingles = set()
-
-        for i in range(len(document) - k + 1):
-            shingles.add(document[i:i + k])
-
+        tokens = document.split()
+        for i in range(len(tokens) - 1):
+            shingles.add(tokens[i] + " " + tokens[i + 1])
         return shingles
 
     def build_characteristic_matrix(self):

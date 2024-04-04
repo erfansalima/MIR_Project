@@ -79,7 +79,7 @@ class SpellCorrection:
         word_counter = dict()
 
         for doc in all_documents:
-            for word in doc:
+            for word in doc.split():
                 if word not in all_shingled_words:
                     word_counter[word] = 0
                     all_shingled_words[word] = self.shingle_word(word)
@@ -101,16 +101,16 @@ class SpellCorrection:
         list of str
             5 nearest words.
         """
-        top5_candidates = list()
+        shingled_word = self.shingle_word(word)
+        similarity_scores = {}
 
-        for candidate in self.word_counter.keys():
-            if nltk.edit_distance(word, candidate) <= 1:
-                top5_candidates.append(candidate)
-            if len(top5_candidates) == 5:
-                break
+        for candidate_word, candidate_shingles in self.all_shingled_words.items():
+            score = self.jaccard_score(shingled_word, candidate_shingles)
+            similarity_scores[candidate_word] = score
 
-        return top5_candidates
-    
+        sorted_candidates = sorted(similarity_scores.items(), key=lambda x: x[1], reverse=True)
+        return [candidate[0] for candidate in sorted_candidates[:5]]
+
     def spell_check(self, query):
         """
         Find correct form of a misspelled query.
@@ -133,7 +133,8 @@ class SpellCorrection:
             else:
                 nearest_words = self.find_nearest_words(word)
                 if nearest_words:
-                    corrected_query.append(nearest_words[0])
+                    word_shingles = self.shingle_word(word)
+                    corrected_query.append(max(nearest_words, key=lambda word: self.word_counter[word] * self.jaccard_score(word_shingles, self.shingle_word(word))))
                 else:
                     corrected_query.append(word)
 

@@ -134,7 +134,8 @@ class Index:
             posting list of the word (you should return the list of document IDs that contain the word and ignore the tf)
         """
         try:
-            posting_list = list(self.index[index_type].get(word, {}).keys())
+            posting_list = list(self.index[index_type][word].keys())
+            print(posting_list)
             return posting_list
         except Exception as e:
             print(f"Error occurred: {e}")
@@ -313,10 +314,9 @@ class Index:
         path : str
             Path to load the file
         """
-        with open(os.path.join(path, 'index.json'), 'r') as f:
-            loaded_index = json.load(f)
-
-        self.index.update(loaded_index)
+        path += '_index.json'
+        with open(path, 'r') as file:
+            return json.load(file)
 
     def check_if_index_loaded_correctly(self, index_type: str, loaded_index: dict):
         """
@@ -366,7 +366,6 @@ class Index:
                 if check_word in field:
                     docs.append(document['id'])
                     break
-
             # if we have found 3 documents with the word, we can break
             if len(docs) == 3:
                 break
@@ -404,12 +403,24 @@ with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\IMDB_crawled(Wi
     movies_dataset = json.load(f)
 
 index = Index(movies_dataset)
-index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index')
+# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index')
 # index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.DOCUMENTS.value)
 # index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.STARS.value)
 # index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.GENRES.value)
 # index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.SUMMARIES.value)
 # index.check_add_remove_is_correct()
+# dummy_document = {
+#            'id': '100',
+#            'stars': ['tim', 'henry'],
+#            'genres': ['drama', 'crime'],
+#            'summaries': ['good']
+#        }
+# index.add_document_to_index(dummy_document)
+# index.check_if_indexing_is_good(Indexes.STARS.value, check_word='henry')
+# index.check_if_index_loaded_correctly()
 
-with open('../terms.json', 'w') as f:
-    json.dump(index.terms, f)
+# path = './index/' + Indexes.DOCUMENTS.value
+# x = index.load_index(path)
+# print(index.check_if_index_loaded_correctly(Indexes.DOCUMENTS.value, x))
+# with open('../terms.json', 'w') as f:
+#    json.dump(index.terms, f)

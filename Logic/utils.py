@@ -32,6 +32,7 @@ def correct_text(text: str, all_documents: List[str]) -> str:
     # TODO: You can add any preprocessing steps here, if needed!
     preprocess = Preprocessor(all_documents)
     all_documents = preprocess.preprocess()
+    all_documents.append(' '.join(list(preprocess.stopwords)))
     spell_correction_obj = SpellCorrection(all_documents)
     text = spell_correction_obj.spell_check(text)
     return text

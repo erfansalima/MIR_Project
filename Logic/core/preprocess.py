@@ -81,7 +81,10 @@ class Preprocessor:
         str
             The normalized text.
         """
-        return text.lower()
+        lemmatizer = WordNetLemmatizer()
+        normalized_word = lemmatizer.lemmatize(text)
+        normalized_word = re.sub(r'\b\w*\d\w*\b', '', normalized_word)
+        return normalized_word.lower()
 
     def remove_links(self, text: str):
         """
@@ -149,6 +152,6 @@ class Preprocessor:
         list
             The list of words with stopwords removed.
         """
-        filtered_tokens = [token for token in tokens if token.lower() not in self.stopwords]
+        filtered_tokens = [token for token in tokens if token.lower() not in self.stopwords and not any(char.isdigit() for char in token)]
         filtered_tokens = ' '.join(filtered_tokens)
         return filtered_tokens

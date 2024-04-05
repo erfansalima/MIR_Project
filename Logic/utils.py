@@ -7,6 +7,9 @@ from .core.indexer.indexes_enum import Indexes, Index_types
 import json
 
 with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\terms.json', 'r') as f:
+    terms = json.load(f)
+
+with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\IMDB_crawled(Without null).json', 'r') as f:
     movies_dataset = json.load(f)
 
 search_engine = SearchEngine()

@@ -87,9 +87,9 @@ class SearchEngine:
             The final scores of the documents.
         """
         for field, weight in weights.items():
-            field_scores = scores.get(field, {})
-            for doc_id, score in field_scores.items():
-                final_scores[doc_id] = final_scores.get(doc_id, 0) + weight * score
+            if field in scores:
+                for document_id, score in scores[field].items():
+                    final_scores[document_id] = final_scores.get(document_id, 0) + weight * score
 
     def find_scores_with_unsafe_ranking(self, query, method, weights, max_results, scores):
         """
@@ -109,9 +109,15 @@ class SearchEngine:
             The scores of the documents.
         """
         for field in weights:
+            scores[field] = {}
             for tier in ["first_tier", "second_tier", "third_tier"]:
-                #TODO
-                pass
+                scorer = Scorer(self.tiered_index[field].index[tier], self.metadata_index.index.get("document_count"))
+                if (method == 'OkapiBM25'):
+                    scores[field].update(scorer.compute_socres_with_okapi_bm25(query, self.metadata_index.index["averge_document_length"][field.value], self.document_lengths_index[field].index))
+                else:
+                    scores[field].update(scorer.compute_scores_with_vector_space_model(query, method))
+                if len(scores[field] > max_results):
+                    break
 
     def find_scores_with_safe_ranking(self, query, method, weights, scores):
         """
@@ -130,8 +136,12 @@ class SearchEngine:
         """
 
         for field in weights:
-            #TODO
-            pass
+            scores[field] = {}
+            scorer = Scorer(self.document_indexes[field].index, self.metadata_index.index.get("document_count"))
+            if (method == 'OkapiBM25'):
+                scores[field] = scorer.compute_socres_with_okapi_bm25(query, self.metadata_index.index["averge_document_length"][field.value], self.document_lengths_index[field].index)
+            else:
+                scores[field] = scorer.compute_scores_with_vector_space_model(query, method)
 
     def merge_scores(self, scores1, scores2):
         """
@@ -150,18 +160,19 @@ class SearchEngine:
             The merged dictionary of scores.
         """
 
-        #TODO
+        # handled above
 
 
 if __name__ == '__main__':
     search_engine = SearchEngine()
     query = "spider man in wonderland"
-    method = "lnc.ltc"
+    method = "ltc.lnc"
     weights = {
         Indexes.STARS: 1,
         Indexes.GENRES: 1,
         Indexes.SUMMARIES: 1
     }
+
     result = search_engine.search(query, method, weights)
 
     print(result)

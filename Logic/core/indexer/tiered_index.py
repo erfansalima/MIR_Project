@@ -62,14 +62,15 @@ class Tiered_index:
         second_tier = {}
         third_tier = {}
 
-        for key, value in current_index.items():
-            for id, tf in value.items():
+        for key, inner_dict in current_index.items():
+            for id, tf in inner_dict.items():
                 if tf >= first_tier_threshold:
-                    first_tier[key] = id
+                    first_tier.setdefault(key, {})[id] = tf
                 elif tf >= second_tier_threshold:
-                    second_tier[key] = id
+                    second_tier.setdefault(key, {})[id] = tf
                 else:
-                    third_tier[key] = id
+                    third_tier.setdefault(key, {})[id] = tf
+
         return {
             "first_tier": first_tier,
             "second_tier": second_tier,

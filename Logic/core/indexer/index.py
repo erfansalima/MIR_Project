@@ -410,5 +410,6 @@ index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\i
 # index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.GENRES.value)
 # index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.SUMMARIES.value)
 # index.check_add_remove_is_correct()
+
 with open('../terms.json', 'w') as f:
     json.dump(index.terms, f)

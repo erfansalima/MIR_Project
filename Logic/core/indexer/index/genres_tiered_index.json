@@ -1,28 +1,74 @@
 {
     "first_tier": {
-        "crime": "tt0061277",
-        "drama": "tt0061277",
-        "action": "tt0337978",
-        "biography": "tt0104427",
-        "sci-fi": "tt0084945",
-        "adventure": "tt21378744",
-        "thriller": "tt0068611",
-        "comedy": "tt0072519",
-        "romance": "tt0102609",
-        "war": "tt10545296",
-        "animation": "tt1216475",
-        "mystery": "tt0061277",
-        "fantasy": "tt0084945",
-        "music": "tt3783958",
-        "history": "tt5332732",
-        "western": "tt5362988",
-        "family": "tt0233422",
-        "horror": "tt0104511",
-        "film-noir": "tt0051207",
-        "musical": "tt0475645",
-        "sport": "tt2122340",
-        "documentary": "tt0237630",
-        "short": "tt27521244"
+        "crime": {
+            "tt0061277": 1
+        },
+        "drama": {
+            "tt0061277": 1
+        },
+        "action": {
+            "tt0337978": 1
+        },
+        "biography": {
+            "tt0104427": 1
+        },
+        "sci-fi": {
+            "tt0084945": 1
+        },
+        "adventure": {
+            "tt21378744": 1
+        },
+        "thriller": {
+            "tt0068611": 1
+        },
+        "comedy": {
+            "tt0072519": 1
+        },
+        "romance": {
+            "tt0102609": 1
+        },
+        "war": {
+            "tt10545296": 1
+        },
+        "animation": {
+            "tt1216475": 1
+        },
+        "mystery": {
+            "tt0061277": 1
+        },
+        "fantasy": {
+            "tt0084945": 1
+        },
+        "music": {
+            "tt3783958": 1
+        },
+        "history": {
+            "tt5332732": 1
+        },
+        "western": {
+            "tt5362988": 1
+        },
+        "family": {
+            "tt0233422": 1
+        },
+        "horror": {
+            "tt0104511": 1
+        },
+        "film-noir": {
+            "tt0051207": 1
+        },
+        "musical": {
+            "tt0475645": 1
+        },
+        "sport": {
+            "tt2122340": 1
+        },
+        "documentary": {
+            "tt0237630": 1
+        },
+        "short": {
+            "tt27521244": 1
+        }
     },
     "second_tier": {},
     "third_tier": {}

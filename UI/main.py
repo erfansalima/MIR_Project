@@ -9,6 +9,7 @@ import time
 from enum import Enum
 import random
 from Logic.core.snippet import Snippet
+from Logic.core.indexer.indexes_enum import Indexes
 
 snippet_obj = Snippet(
     number_of_words_on_each_side=5
@@ -53,7 +54,7 @@ def search_handling(
     search_method,
 ):
     if search_button:
-        corrected_query = utils.correct_text(search_term, utils.movies_dataset)
+        corrected_query = utils.correct_text(search_term, utils.terms)
 
         if corrected_query != search_term:
             st.warning(f"Your search terms were corrected to: {corrected_query}")
@@ -155,7 +156,12 @@ def main():
             step=0.1,
         )
 
-        search_weights = [weight_stars, weight_genres, weight_summary]
+        search_weights = {
+            Indexes.STARS: weight_stars,
+            Indexes.GENRES: weight_genres,
+            Indexes.SUMMARIES: weight_summary
+        }
+
         search_method = st.selectbox(
             "Search method",
             ("ltn.lnn", "ltc.lnc", "OkapiBM25"),

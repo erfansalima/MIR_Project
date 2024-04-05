@@ -63,7 +63,7 @@ class Metadata_index:
         path : str
             The path to the directory where the indexes are stored.
         """
-        path =  path + Indexes.DOCUMENTS.value + '_' + Index_types.METADATA.value + '_index.json'
+        path = path + Indexes.DOCUMENTS.value + '_' + Index_types.METADATA.value + '_index.json'
         with open(path, 'w') as file:
             json.dump(self.metadata_index, file, indent=4)
 

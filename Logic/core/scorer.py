@@ -67,7 +67,10 @@ class Scorer:
         idf = self.idf.get(term, None)
         if idf is None:
             df = len(self.index.get(term, {}))
-            idf = np.log(self.N / df)
+            if df == 0:
+                idf = 0
+            else:
+                idf = np.log(self.N / df)
             self.idf[term] = idf
 
         return idf
@@ -119,6 +122,23 @@ class Scorer:
 
         return scores
 
+    def calculate(self, tf, idf, method):
+        for i in range(len(tf)):
+            tf[i] += 1
+
+        if method[0] == 'n':
+            score = tf
+        else:
+            score = 1 + np.log(tf)
+
+        if method[1] == 't':
+            score *= idf
+
+        if method[2] == 'c':
+            score /= np.linalg.norm(score)
+
+        return score
+
     def get_vector_space_model_score(self, query, query_tfs, document_id, document_method, query_method):
         """
         Returns the Vector Space Model score of a document for a query.
@@ -141,32 +161,19 @@ class Scorer:
         float
             The Vector Space Model score of the document for the query.
         """
-        doc_vector = []
-        query_vector = []
+        tf = []
+        idf = []
+        qtf = []
 
-        for term in self.index.keys():
-            d_tf = self.index[term][document_id]
-            if document_method[0] == 'l':
-                d_tf = np.log10(d_tf) + 1
-            d_idf = 1
-            if document_method[1] == 't':
-                d_idf = self.get_idf(term)
-            doc_vector.append(d_tf * d_idf)
+        for term in query:
+            if term in self.index and document_id in self.index[term]:
+                tf.append(self.index[term][document_id])
+            else:
+                tf.append(0)
+            idf.append(self.get_idf(term))
+            qtf.append(query_tfs.get(term, 0))
 
-            q_tf = query_tfs[term]
-            if query_method[0] == 'l':
-                q_tf = np.log10(q_tf) + 1
-            q_idf = 1
-            if query_method[1] == 't':
-                q_idf = self.get_idf(term)
-            query_vector.append(q_tf * q_idf)
-
-        if document_method[2] == 'c':
-            score = np.dot(query_vector, doc_vector) / np.linalg.norm(doc_vector)
-        if query_method[2] == 'c':
-            score = np.dot(query_vector, doc_vector) / np.linalg.norm(query_vector)
-
-        return score
+        return np.dot(self.calculate(tf, idf, document_method), self.calculate(qtf, idf, query_method))
 
     def compute_socres_with_okapi_bm25(self, query, average_document_field_length, document_lengths):
         """
@@ -220,9 +227,10 @@ class Scorer:
 
         score = 0
         for term in query:
-            freq = self.index[term]
-            denumerator = freq + k * (1 - b + b * document_lengths[document_id] / average_document_field_length)
-            numerator = self.get_idf(term) * freq * (k + 1)
-            score += numerator / denumerator
+            if document_id in self.index[term]:
+                freq = self.index[term][document_id]
+                denumerator = freq + k * (1 - b + b * document_lengths[document_id] / average_document_field_length)
+                numerator = self.get_idf(term) * freq * (k + 1)
+                score += numerator / denumerator
 
         return score

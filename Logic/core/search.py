@@ -68,7 +68,7 @@ class SearchEngine:
         self.aggregate_scores(weights, scores, final_scores)
         
         result = sorted(final_scores.items(), key=lambda x: x[1], reverse=True)
-        if max_results is not None:
+        if max_results != -1:
             result = result[:max_results]
 
         return result
@@ -116,7 +116,7 @@ class SearchEngine:
                     scores[field].update(scorer.compute_socres_with_okapi_bm25(query, self.metadata_index.index["averge_document_length"][field.value], self.document_lengths_index[field].index))
                 else:
                     scores[field].update(scorer.compute_scores_with_vector_space_model(query, method))
-                if len(scores[field] > max_results):
+                if max_results != -1 & len(scores[field]) > max_results:
                     break
 
     def find_scores_with_safe_ranking(self, query, method, weights, scores):
@@ -166,7 +166,7 @@ class SearchEngine:
 if __name__ == '__main__':
     search_engine = SearchEngine()
     query = "spider man in wonderland"
-    method = "ltc.lnc"
+    method = "lnc.ltc"
     weights = {
         Indexes.STARS: 1,
         Indexes.GENRES: 1,

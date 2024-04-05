@@ -124,7 +124,7 @@ class Scorer:
 
     def calculate(self, tf, idf, method):
         for i in range(len(tf)):
-            tf[i] += 1
+            tf[i] += 0.1
 
         if method[0] == 'n':
             score = tf
@@ -171,7 +171,7 @@ class Scorer:
             else:
                 tf.append(0)
             idf.append(self.get_idf(term))
-            qtf.append(query_tfs.get(term, 0))
+            qtf.append(query_tfs[term])
 
         return np.dot(self.calculate(tf, idf, document_method), self.calculate(qtf, idf, query_method))
 
@@ -227,7 +227,7 @@ class Scorer:
 
         score = 0
         for term in query:
-            if document_id in self.index[term]:
+            if term in self.index and document_id in self.index[term]:
                 freq = self.index[term][document_id]
                 denumerator = freq + k * (1 - b + b * document_lengths[document_id] / average_document_field_length)
                 numerator = self.get_idf(term) * freq * (k + 1)

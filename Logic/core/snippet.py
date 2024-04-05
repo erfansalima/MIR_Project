@@ -57,19 +57,25 @@ class Snippet:
         final_snippet = ""
         not_exist_words = []
 
-        doc_words = set(doc.lower().split())
-        query_words = set(self.remove_stop_words_from_query(query).lower().split())
-        exist_words = doc_words.intersection(query_words)
-        not_exist_words = list(query_words - exist_words)
+        doc_words = doc.split()
+        query_words = self.remove_stop_words_from_query(query).split()
 
-        final_snippet = doc
-        for word in exist_words:
-            word_index = doc.lower().index(word)
-            start_index = max(0, word_index - self.number_of_words_on_each_side * 2)
-            end_index = min(len(doc), word_index + self.number_of_words_on_each_side * 2)
-            snippet_part = doc[start_index:end_index]
-            final_snippet = final_snippet.replace(snippet_part, f'***{snippet_part}***')
+        for query_word in query_words:
 
-        return final_snippet, not_exist_words
+            if query_word not in doc_words:
+                not_exist_words.append(query_word)
+            else:
+                for i in range(len(doc_words)):
+                    if doc_words[i] == query_word:
+                        occurrence = i
+                        break
 
-        return final_snippet, not_exist_words
+                start = max(0, occurrence - self.number_of_words_on_each_side)
+                end = min(len(doc_words), occurrence + self.number_of_words_on_each_side + 1)
+                snippet_words = doc_words[start:end]
+
+                snippet_words[snippet_words.index(query_word)] = f"***{query_word}***"
+                final_snippet += " ".join(snippet_words) + " ... "
+
+        return final_snippet[:len(final_snippet)-5], not_exist_words
+

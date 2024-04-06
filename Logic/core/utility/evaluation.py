@@ -1,6 +1,7 @@
 import math
 from typing import List
 
+import numpy
 import wandb as wandb
 
 
@@ -161,15 +162,10 @@ class Evaluation:
             The DCG of the predicted results
         """
         DCG = 0.0
-
-        def calculate_DCG_at_k(scores, k):
-            dcg = scores[0]
-            for i in range(1, min(k, len(scores))):
-                dcg += scores[i] / (math.log2(i + 1))
-            return dcg
-
-        relevant_scores = [1.0] * len(predicted[0])
-        DCG = calculate_DCG_at_k(relevant_scores, len(predicted[0]))
+        for i, item in enumerate(predicted):
+            if item in actual:
+                DCG += 1 / math.log2(i + 2)
+        return DCG
 
         return DCG
     
@@ -192,8 +188,7 @@ class Evaluation:
         NDCG = 0.0
 
         DCG = self.calculate_DCG(actual, predicted)
-        ideal_scores = sorted([1.0] * len(actual[0]), reverse=True)
-        ideal_DCG = self.calculate_DCG([actual[0]], [actual[0]])
+        ideal_DCG = self.calculate_DCG(predicted, actual)
         NDCG = DCG / ideal_DCG if ideal_DCG != 0 else 0.0
 
         return NDCG
@@ -239,13 +234,12 @@ class Evaluation:
         float
             The MRR of the predicted results
         """
-        MRR = 0.0
+        MRR = []
 
-        for p in predicted:
-            if p in actual:
-                MRR = 1 / (predicted.index(p) + 1)
-                break
+        for i,p in enumerate(predicted):
+            MRR.append(self.cacluate_RR(actual[i], p))
 
+        MRR = numpy.mean(MRR)
         return MRR
 
     def print_evaluation(self, precision, recall, f1, ap, map, dcg, ndcg, rr, mrr):

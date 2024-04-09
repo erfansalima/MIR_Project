@@ -1,0 +1,45 @@
+{
+    "os": "Windows-10-10.0.22621-SP0",
+    "python": "3.11.2",
+    "heartbeatAt": "2024-04-09T06:18:58.395234",
+    "startedAt": "2024-04-09T06:18:54.852629",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\utility\\evaluation.py",
+    "codePathLocal": "evaluation.py",
+    "codePath": "Logic\\core\\utility\\evaluation.py",
+    "git": {
+        "remote": "https://github.com/erfansalima/MIR_Project.git",
+        "commit": "6669ac52464891f3de25a8d6bc3879eb812a21b4"
+    },
+    "email": "erfansalima@gmail.com",
+    "root": "D:/uni/term6/MY/MIR/Project/MIR_Project",
+    "host": "DESKTOP-530FAJ7",
+    "username": "Erfan Salima",
+    "executable": "D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\venv\\Scripts\\python.exe",
+    "cpu_count": 4,
+    "cpu_count_logical": 8,
+    "cpu_freq": {
+        "current": 2803.0,
+        "min": 0.0,
+        "max": 2803.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 2803.0,
+            "min": 0.0,
+            "max": 2803.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 585.8388633728027,
+            "used": 26.561046600341797
+        }
+    },
+    "memory": {
+        "total": 15.703407287597656
+    }
+}

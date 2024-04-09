@@ -3,7 +3,6 @@ import itertools
 import random
 import json
 
-random.seed(1200)
 
 class MinHashLSH:
     def __init__(self, documents, num_hashes):
@@ -52,19 +51,14 @@ class MinHashLSH:
             The binary characteristic matrix.
         """
         shingle_sets = [self.shingle_document(doc) for doc in self.documents]
+        all_shingles = list(set().union(*shingle_sets))
 
-        all_shingles = set().union(*shingle_sets)
-        shingle_indices = {shingle: index for index, shingle in enumerate(all_shingles)}
+        characteristic_matrix = np.zeros((len(shingle_sets), len(all_shingles)))
 
-        num_documents = len(self.documents)
-        num_shingles = len(all_shingles)
-        characteristic_matrix = np.zeros((num_documents, num_shingles), dtype=int)
-
-        for i, doc in enumerate(self.documents):
-            shingles = self.shingle_document(doc)
-            for shingle in shingles:
-                j = shingle_indices[shingle]
-                characteristic_matrix[i, j] = 1
+        for i in range(len(shingle_sets)):
+            for j in range(len(all_shingles)):
+                if all_shingles[j] in shingle_sets[i]:
+                    characteristic_matrix[i, j] = 1
 
         return characteristic_matrix
 
@@ -78,23 +72,24 @@ class MinHashLSH:
             The Min-Hash signatures matrix.
         """
         characteristic_matrix = self.build_characteristic_matrix()
-
-        num_documents, num_shingles = characteristic_matrix.shape
+        signature = np.full((characteristic_matrix.shape[0], self.num_hashes), np.inf)
         hash_functions = []
+
         for _ in range(self.num_hashes):
-            a = random.randint(1, num_shingles * 30)
-            b = random.randint(1, num_shingles * 30)
-            hash_functions.append((a, b))
+            hash_functions.append(random.randint(0, len(self.documents) * 10))
 
-        signatures = np.full((self.num_hashes, characteristic_matrix.shape[0]), np.inf)
+        for i in range(len(self.documents)):
+            shingles = self.shingle_document(self.documents[i])
+            for j in range(len(hash_functions)):
+                    for shingle in shingles:
+                        shingle = " ".join(shingle)
+                        hash = hash_functions[j]
+                        for char in shingle:
+                            hash = (ord(char) + hash) % (len(self.documents))
 
-        for i in range(num_shingles):
-            hash_values = [((a * i + b) % num_shingles) for a, b in hash_functions]
-            for j in range(num_documents):
-                if characteristic_matrix[j, i] == 1:
-                    signatures[:, j] = np.minimum(signatures[:, j], hash_values)
+                        signature[i][j] = min(hash, signature[i][j])
 
-        return signatures
+        return signature
 
     def lsh_buckets(self, signature, bands=10, rows_per_band=10):
         """
@@ -116,11 +111,10 @@ class MinHashLSH:
         """
         buckets = {}
 
-        for band in range(bands):
-            band_signatures = signature[band * rows_per_band: (band + 1) * rows_per_band]
-            band_hashes = [hash(tuple(row)) for row in band_signatures.T]
-            for index, hash_value in enumerate(band_hashes):
-                buckets.setdefault(hash_value, []).append(index)
+        for i, sig in enumerate(signature):
+            for b in range(bands):
+                h_band = hash(tuple(sig[b * rows_per_band:(b + 1) * rows_per_band]))
+                buckets.setdefault(h_band, []).append(i)
 
         return buckets
 
@@ -207,12 +201,26 @@ class MinHashLSH:
                         correct_near_duplicates += 1
 
         # a good score is around 0.8
+        print(correct_near_duplicates)
+        print(all_near_duplicates)
         print("your final score in near duplicate detection:", correct_near_duplicates / all_near_duplicates)
 
 
 with open('D:/uni/term6/my/mir/project/mir_project/logic/core/LSHFakeData.json', 'r') as f:
     movies = json.load(f)
 
-docs = [' '.join(movie['summaries']) for movie in movies]
+with open('D:/uni/term6/my/mir/project/mir_project/logic/IMDB_crawled(Without null).json', 'r') as f:
+    all_movies = json.load(f)
+
+docs = []
+
+for movie in movies:
+    if len(movie['summaries']) > 0:
+        docs.append(' '.join(movie['summaries']))
+
+for movie in all_movies:
+    if len(movie['summaries']) > 0:
+        docs.append(' '.join(movie['summaries']))
+
 minHashLSH = MinHashLSH(docs, 100)
 minHashLSH.jaccard_similarity_test(minHashLSH.perform_lsh(), docs)

@@ -135,7 +135,6 @@ class Index:
         """
         try:
             posting_list = list(self.index[index_type][word].keys())
-            print(posting_list)
             return posting_list
         except Exception as e:
             print(f"Error occurred: {e}")
@@ -363,7 +362,7 @@ class Index:
                 continue
 
             for field in document[index_type]:
-                if check_word in field:
+                if check_word in field.split():
                     docs.append(document['id'])
                     break
             # if we have found 3 documents with the word, we can break
@@ -416,7 +415,7 @@ index = Index(movies_dataset)
 #            'summaries': ['good']
 #        }
 # index.add_document_to_index(dummy_document)
-# index.check_if_indexing_is_good(Indexes.STARS.value, check_word='henry')
+# index.check_if_indexing_is_good(Indexes.SUMMARIES.value, check_word='good')
 # index.check_if_index_loaded_correctly()
 
 # path = './index/' + Indexes.DOCUMENTS.value

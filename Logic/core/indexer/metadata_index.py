@@ -50,8 +50,10 @@ class Metadata_index:
         """
         sum = 0
         for movie in self.documents.values():
-            sum += len(movie[where])
-        return sum
+            for part in movie[where]:
+                sum += len(part.split())
+
+        return sum / len(self.documents)
 
 
     def store_metadata_index(self, path):

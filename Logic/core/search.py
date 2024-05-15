@@ -1,7 +1,7 @@
 import json
 import numpy as np
-from Logic.core.preprocess import Preprocessor
-from Logic.core.scorer import Scorer
+from Logic.core.utility.preprocess import Preprocessor
+from Logic.core.utility.scorer import Scorer
 from Logic.core.indexer.indexes_enum import Indexes, Index_types
 from Logic.core.indexer.index_reader import Index_reader
 
@@ -134,7 +134,6 @@ class SearchEngine:
         scores : dict
             The scores of the documents.
         """
-
         for field in weights:
             scores[field] = {}
             scorer = Scorer(self.document_indexes[field].index, self.metadata_index.index.get("document_count"))
@@ -166,7 +165,7 @@ class SearchEngine:
 if __name__ == '__main__':
     search_engine = SearchEngine()
     query = "spider man in wonderland"
-    method = "lnc.ltc"
+    method = "ltc.lnc"
     weights = {
         Indexes.STARS: 1,
         Indexes.GENRES: 1,

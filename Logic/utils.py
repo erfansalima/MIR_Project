@@ -1,8 +1,8 @@
 from typing import Dict, List
 from .core.search import SearchEngine
-from .core.spell_correction import SpellCorrection
-from .core.preprocess import Preprocessor
-from .core.snippet import Snippet
+from .core.utility.spell_correction import SpellCorrection
+from .core.utility.preprocess import Preprocessor
+from .core.utility.snippet import Snippet
 from .core.indexer.indexes_enum import Indexes, Index_types
 import json
 
@@ -69,6 +69,7 @@ def search(
     list
     Retrieved documents with snippet
     """
+
     return search_engine.search(
         query, method, weights, max_results=max_result_count, safe_ranking=True
     )

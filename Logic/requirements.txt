@@ -3,3 +3,12 @@ bs4==0.0.2
 numpy==1.26.4
 spacy==3.7.4
 nltk==3.8.1
+matplotlib
+seaborn
+wandb
+scikit-learn
+sphinx
+myst_parser
+sphinx-book-theme
+networkx
+fasttext

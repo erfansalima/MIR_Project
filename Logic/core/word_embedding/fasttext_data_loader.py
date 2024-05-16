@@ -1,6 +1,12 @@
 import pandas as pd
 from tqdm import tqdm
 from sklearn.preprocessing import LabelEncoder
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+import string
+
+from Logic.core.indexer.index_reader import Index_reader
+from Logic.core.indexer.indexes_enum import Indexes
 
 
 class FastTextDataLoader:
@@ -20,7 +26,6 @@ class FastTextDataLoader:
             The path to the file containing movie information.
         """
         self.file_path = file_path
-        pass
 
     def read_data_to_df(self):
         """
@@ -34,7 +39,58 @@ class FastTextDataLoader:
         ----------
             pd.DataFrame: A pandas DataFrame containing movie information (synopses, summaries, reviews, titles, genres).
         """
-        pass
+        data = Index_reader(self.file_path, index_name=Indexes.DOCUMENTS).index
+
+        # Extract required information (synopses, summaries, reviews, titles, genres)
+        synopses = []
+        summaries = []
+        reviews = []
+        titles = []
+        genres = []
+
+        for movie_id, movie_data in tqdm(data.items()):
+            synopses.append(movie_data.get('synopsis', ''))
+            summaries.append(movie_data.get('summaries', ''))
+            reviews.append(movie_data.get('reviews', ''))
+            titles.append(movie_data.get('title', ''))
+            genres.append(movie_data.get('genres', ''))
+
+        # Create DataFrame
+        df = pd.DataFrame({
+            'synopsis': synopses,
+            'summary': summaries,
+            'reviews': reviews,
+            'title': titles,
+            'genre': genres
+        })
+        return df
+
+    def preprocess_text(self, text):
+        """
+        Preprocesses the text data by lowercasing, removing punctuation, stopwords, and tokenizing.
+
+        Parameters
+        ----------
+        text: str
+            The text to preprocess.
+
+        Returns
+        -------
+        str
+            The preprocessed text.
+        """
+        x = ''
+        for text in text:
+            text = ' '.join(text)
+            text = text.lower()
+            text = text.translate(str.maketrans('', '', string.punctuation))
+            tokens = word_tokenize(text)
+            stop_words = set(stopwords.words('english'))
+            filtered_tokens = [token for token in tokens if token not in stop_words]
+            preprocessed_text = ' '.join(filtered_tokens)
+            x += preprocessed_text
+
+        return x
 
     def create_train_data(self):
         """
@@ -43,6 +99,14 @@ class FastTextDataLoader:
         Returns:
             tuple: A tuple containing two NumPy arrays: X (preprocessed text data) and y (encoded genre labels).
         """
-        pass
+        df = self.read_data_to_df()
 
+        for col in ['reviews']:
+            df[f'preprocessed_{col}'] = df[col].apply(self.preprocess_text)
 
+        label_encoder = LabelEncoder()
+        df['encoded_genre'] = label_encoder.fit_transform(df['genre'].astype(str))
+        X = df['preprocessed_reviews'].values.astype(str)
+        y = df['encoded_genre'].values
+
+        return X, y

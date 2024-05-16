@@ -24,7 +24,7 @@ class color(Enum):
 
 
 def get_top_x_movies_by_rank(x: int, results: list):
-    path = "../Logic/core/index/"  # Link to the index folder
+    path = "../Logic/core/indexer/index/"  # Link to the index folder
     document_index = Index_reader(path, Indexes.DOCUMENTS)
     corpus = []
     root_set = []
@@ -39,6 +39,7 @@ def get_top_x_movies_by_rank(x: int, results: list):
         movie_title = movie_detail["title"]
         stars = movie_detail["stars"]
         root_set.append({"id": movie_id, "title": movie_title, "stars": stars})
+
     analyzer = LinkAnalyzer(root_set=root_set)
     analyzer.expand_graph(corpus=corpus)
     actors, movies = analyzer.hits(max_result=x)
@@ -144,9 +145,9 @@ def search_handling(
                 search_max_num,
                 search_method,
                 search_weights,
-                #unigram_smoothing=unigram_smoothing,
-                #alpha=alpha,
-                #lamda=lamda,
+                unigram_smoothing,
+                alpha,
+                lamda,
             )
             if "search_results" in st.session_state:
                 st.session_state["search_results"] = result

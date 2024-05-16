@@ -1,3 +1,5 @@
+import tempfile
+
 import fasttext
 import re
 
@@ -6,7 +8,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from scipy.spatial import distance
 
-from .fasttext_data_loader import FastTextDataLoader
+from fasttext_data_loader import FastTextDataLoader
 
 
 def preprocess_text(text, minimum_length=1, stopword_removal=True, stopwords_domain=[], lower_case=True,
@@ -31,7 +33,25 @@ def preprocess_text(text, minimum_length=1, stopword_removal=True, stopwords_dom
     punctuation_removal: bool
         whether to remove punctuations
     """
-    pass
+    text = ' '.join(text)
+
+    if lower_case:
+        text = text.lower()
+
+    if punctuation_removal:
+        text = re.sub(r'[^\w\s]', '', text)
+
+    tokens = word_tokenize(text)
+
+    if stopword_removal:
+        stop_words = set(stopwords.words('english'))
+        if stopwords_domain:
+            stop_words.update(stopwords_domain)
+        tokens = [token for token in tokens if token not in stop_words]
+
+    tokens = [token for token in tokens if len(token) >= minimum_length]
+
+    return ' '.join(tokens)
 
 class FastText:
     """
@@ -67,7 +87,13 @@ class FastText:
         texts : list of str
             The texts to train the FastText model.
         """
-        pass
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        with open(temp_file.name, 'w', encoding='utf-8') as f:
+            for text in texts:
+                f.write(text + '\n')
+
+        self.model = fasttext.train_unsupervised(input=temp_file.name, model=self.method)
+        temp_file.close()
 
     def get_query_embedding(self, query):
         """
@@ -87,7 +113,7 @@ class FastText:
         np.ndarray
             The embedding for the query.
         """
-        pass
+        return self.model.get_sentence_vector(query)
 
     def analogy(self, word1, word2, word3):
         """
@@ -101,21 +127,24 @@ class FastText:
         Returns:
             str: The word that completes the analogy.
         """
-        # Obtain word embeddings for the words in the analogy
-        # TODO
+        vec_word1 = self.model[word1]
+        vec_word2 = self.model[word2]
+        vec_word3 = self.model[word3]
 
-        # Perform vector arithmetic
-        # TODO
+        vec_result = vec_word2 - vec_word1 + vec_word3
+        word_vectors = {word: self.model[word] for word in self.model.words}
+        words_to_exclude = {word1, word2, word3}
 
-        # Create a dictionary mapping each word in the vocabulary to its corresponding vector
-        # TODO
+        closest_word = None
+        min_distance = float('inf')
+        for word, vec in word_vectors.items():
+            if word not in words_to_exclude:
+                dist = distance.cosine(vec_result, vec)
+                if dist < min_distance:
+                    closest_word = word
+                    min_distance = dist
 
-        # Exclude the input words from the possible results
-        # TODO
-
-        # Find the word whose vector is closest to the result vector
-        # TODO
-        pass
+        return closest_word
 
     def save_model(self, path='FastText_model.bin'):
         """
@@ -126,7 +155,7 @@ class FastText:
         path : str, optional
             The path to save the FastText model.
         """
-        pass
+        self.model.save_model(path)
 
     def load_model(self, path="FastText_model.bin"):
         """
@@ -137,7 +166,8 @@ class FastText:
         path : str, optional
             The path to load the FastText model.
         """
-        pass
+        self.model = fasttext.load_model(path)
+
 
     def prepare(self, dataset, mode, save=False, path='FastText_model.bin'):
         """
@@ -158,12 +188,12 @@ class FastText:
             self.save_model(path)
 
 if __name__ == "__main__":
-    ft_model = FastText(preprocessor=preprocess_text, method='skipgram')
+    ft_model = FastText(method='skipgram')
 
-    path = './Phase_1/index/'
-    ft_data_loader = FastTextDataLoader()
+    path = '../indexer/index/'
+    ft_data_loader = FastTextDataLoader(path)
 
-    X = ft_data_loader.create_train_data(path)
+    X, y = ft_data_loader.create_train_data()
 
     ft_model.train(X)
     ft_model.prepare(None, mode = "save")

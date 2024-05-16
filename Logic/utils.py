@@ -29,7 +29,6 @@ def correct_text(text: str, all_documents: List[str]) -> str:
     str
         The corrected form of the given text
     """
-    # TODO: You can add any preprocessing steps here, if needed!
     preprocess = Preprocessor(all_documents)
     all_documents = preprocess.preprocess()
     all_documents.append(' '.join(list(preprocess.stopwords)))
@@ -43,6 +42,9 @@ def search(
     max_result_count: int,
     method: str = "ltn-lnn",
     weights: list = [0.3, 0.3, 0.4],
+    unigram_smoothing=None,
+    alpha=None,
+    lamda=None,
     should_print=False,
     preferred_genre: str = None,
 ):
@@ -51,6 +53,7 @@ def search(
 
     Parameters
     ---------------------------------------------------------------------------------------------------
+    unigram_smoothing
     max_result_count: Return top 'max_result_count' docs which have the highest scores.
                       notice that if max_result_count = -1, then you have to return all docs
 
@@ -71,7 +74,7 @@ def search(
     """
 
     return search_engine.search(
-        query, method, weights, max_results=max_result_count, safe_ranking=True
+        query, method, weights, max_results=max_result_count, safe_ranking=True, smoothing_method=unigram_smoothing, alpha=alpha, lamda=lamda
     )
 
 

@@ -1,6 +1,8 @@
 from .graph import LinkGraph
-from ..indexer.indexes_enum import Indexes
-from ..indexer.index_reader import Index_reader
+import networkx as nx
+import json
+import random
+
 
 class LinkAnalyzer:
     def __init__(self, root_set):
@@ -17,8 +19,8 @@ class LinkAnalyzer:
         """
         self.root_set = root_set
         self.graph = LinkGraph()
-        self.hubs = []
-        self.authorities = []
+        self.hubs = set()
+        self.authorities = set()
         self.initiate_params()
 
     def initiate_params(self):
@@ -30,8 +32,12 @@ class LinkAnalyzer:
         This function has no parameters. You can use self to get or change attributes
         """
         for movie in self.root_set:
-            #TODO
-            pass
+            movie_id = movie["id"]
+            self.graph.add_node(movie_id)
+            self.hubs.add(movie_id)
+            for star in movie["stars"]:
+                self.graph.add_edge(movie_id, star)
+                self.authorities.add(star)
 
     def expand_graph(self, corpus):
         """
@@ -50,8 +56,13 @@ class LinkAnalyzer:
         and refer to the nodes in the root set to the graph and to the list of hubs and authorities.
         """
         for movie in corpus:
-            #TODO
-            pass
+            movie_id = movie["id"]
+            for star in movie["stars"]:
+                if any(star in root_movie["stars"] for root_movie in self.root_set):
+                    self.graph.add_node(movie_id)
+                    self.graph.add_edge(movie_id, star)
+                    self.authorities.add(star)
+                    self.hubs.add(movie_id)
 
     def hits(self, num_iteration=5, max_result=10):
         """
@@ -73,15 +84,30 @@ class LinkAnalyzer:
         """
         a_s = []
         h_s = []
+        h, a = nx.hits(self.graph.graph, max_iter=num_iteration)
+        sorted_hubs = sorted(h, key=h.get, reverse=True)[:max_result]
+        sorted_authorities = sorted(a, key=a.get, reverse=True)
 
-        #TODO
+        for sorted_authority in sorted_authorities:
+            if len(a_s) == max_result:
+                break
+            if not sorted_authority.startswith('tt'):
+                a_s.append(sorted_authority)
 
+        for sorted_hub in sorted_hubs:
+            if len(h_s) == max_result:
+                break
+            if sorted_hub.startswith('tt'):
+                h_s.append(sorted_hub)
         return a_s, h_s
+
 
 if __name__ == "__main__":
     # You can use this section to run and test the results of your link analyzer
-    corpus = []    # TODO: it shoud be your crawled data
-    root_set = []   # TODO: it shoud be a subset of your corpus
+    with open('../../IMDB_crawled.json', 'r') as f:
+        corpus = json.load(f)
+
+    root_set = [corpus[0], corpus[50], corpus[200], corpus[100], corpus[1000], corpus[700], corpus[300]]
 
     analyzer = LinkAnalyzer(root_set=root_set)
     analyzer.expand_graph(corpus=corpus)

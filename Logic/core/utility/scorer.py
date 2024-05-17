@@ -311,7 +311,7 @@ class Scorer:
 
     def compute_bayes_score(self, query, query_tfs, document_id, document_lengths, alpha):
         score = 0.0
-        T = self.get_total_tokens()
+        T = sum(document_lengths.values())
         for term in query.split():
             cf = 0
             if term in self.index and document_id in self.index[term]:
@@ -329,18 +329,19 @@ class Scorer:
 
     def compute_naive_score(self, query, query_tfs, document_id, document_lengths):
         score = 0.0
+        T = len(self.index)
         for term in query.split():
             if term in self.index and document_id in self.index[term]:
                 tf = self.index[term][document_id]
             else:
                 tf = 0
             doc_length = document_lengths[document_id]
-            score += query_tfs[term] * np.log((tf+1) / doc_length)
+            score += query_tfs[term] * np.log((tf + 1/T) / (doc_length + 1))
         return score
 
     def compute_mixture_score(self, query, query_tfs, document_id, document_lengths, alpha,lamda):
         score = 0.0
-        T = self.get_total_tokens()
+        T = sum(document_lengths.values())
         doc_length = document_lengths[document_id]
         for term in query.split():
             cf = 0
@@ -355,10 +356,3 @@ class Scorer:
             score += query_tfs[term] * np.log(lamda * tf / doc_length + (1 - lamda)*(cf / T))
 
         return score
-
-    def get_total_tokens(self):
-        total_tokens = 0
-        for term, postings in self.index.items():
-            for doc_id, tf in postings.items():
-                total_tokens += tf
-        return total_tokens

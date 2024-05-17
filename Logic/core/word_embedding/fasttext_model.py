@@ -8,7 +8,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from scipy.spatial import distance
 
-from fasttext_data_loader import FastTextDataLoader
+from Logic.core.word_embedding.fasttext_data_loader import FastTextDataLoader
 
 
 def preprocess_text(text, minimum_length=1, stopword_removal=True, stopwords_domain=[], lower_case=True,
@@ -197,7 +197,7 @@ if __name__ == "__main__":
 
     ft_model.train(X)
     ft_model.prepare(None, mode = "save")
-
+    ft_model.save_model()
     print(10 * "*" + "Similarity" + 10 * "*")
     word = 'queen'
     neighbors = ft_model.model.get_nearest_neighbors(word, k=5)

@@ -14,16 +14,18 @@ from .clustering_metrics import *
 
 class ClusteringUtils:
 
-    def cluster_kmeans(self, emb_vecs: List, n_clusters: int, max_iter: int = 100) -> Tuple[List, List]:
+    def cluster_kmeans(self, emb_vecs: List[np.ndarray], n_clusters: int, max_iter: int = 100) -> Tuple[List, List]:
         """
         Clusters input vectors using the K-means method.
 
         Parameters
         -----------
-        emb_vecs: List
+        emb_vecs: List[np.ndarray]
             A list of vectors to be clustered.
         n_clusters: int
             The number of clusters to form.
+        max_iter: int, optional
+            The maximum number of iterations. Default is 100.
 
         Returns
         --------
@@ -32,7 +34,22 @@ class ClusteringUtils:
             1. A list containing the cluster centers.
             2. A list containing the cluster index for each input vector.
         """
-        pass
+        data = np.array(emb_vecs)
+
+        np.random.seed(42)
+        initial_indices = np.random.choice(len(data), n_clusters, replace=False)
+        centroids = data[initial_indices]
+
+        for _ in range(max_iter):
+            distances = np.linalg.norm(data[:, np.newaxis] - centroids, axis=2)
+            labels = np.argmin(distances, axis=1)
+
+            new_centroids = np.array([data[labels == i].mean(axis=0) for i in range(n_clusters)])
+            if np.all(centroids == new_centroids):
+                break
+            centroids = new_centroids
+
+        return centroids.tolist(), labels.tolist()
 
     def get_most_frequent_words(self, documents: List[str], top_n: int = 10) -> List[Tuple[str, int]]:
         """
@@ -50,7 +67,11 @@ class ClusteringUtils:
         List[Tuple[str, int]]
             A list of tuples, where each tuple contains a word and its frequency, sorted in descending order of frequency.
         """
-        pass
+        word_counts = Counter()
+        for doc in documents:
+            word_counts.update(doc.split())
+
+        return word_counts.most_common(top_n)
 
     def cluster_kmeans_WCSS(self, emb_vecs: List, n_clusters: int) -> Tuple[List, List, float]:
         """ This function performs K-means clustering on a list of input vectors and calculates the Within-Cluster Sum of Squares (WCSS) for the resulting clusters.
@@ -76,7 +97,26 @@ class ClusteringUtils:
             2) A list containing the cluster index for each input vector.
             3) The Within-Cluster Sum of Squares (WCSS) value for the clustering.
         """
-        pass
+        data = np.array(emb_vecs)
+
+        np.random.seed(42)
+        initial_indices = np.random.choice(len(data), n_clusters, replace=False)
+        centroids = data[initial_indices]
+
+        for _ in range(100):
+            distances = np.linalg.norm(data[:, np.newaxis] - centroids, axis=2)
+            labels = np.argmin(distances, axis=1)
+            new_centroids = np.array([data[labels == i].mean(axis=0) for i in range(n_clusters)])
+
+            if np.all(centroids == new_centroids):
+                break
+
+            centroids = new_centroids
+
+        wcss = sum(np.min(distances, axis=1) ** 2)
+
+        return centroids.tolist(), labels.tolist(), wcss
+
 
     def cluster_hierarchical_single(self, emb_vecs: List) -> List:
         """
@@ -92,7 +132,11 @@ class ClusteringUtils:
         List
             A list containing the cluster index for each input vector.
         """
-        pass
+        linkage_matrix = linkage(np.asarray(emb_vecs), method='single')
+        clustering_model = AgglomerativeClustering(n_clusters=None, linkage='single')
+        clustering_model.fit_predict(linkage_matrix)
+        return clustering_model.labels_.tolist()
+
 
     def cluster_hierarchical_complete(self, emb_vecs: List) -> List:
         """
@@ -108,7 +152,10 @@ class ClusteringUtils:
         List
             A list containing the cluster index for each input vector.
         """
-        pass
+        linkage_matrix = linkage(np.asarray(emb_vecs), method='complete')
+        clustering_model = AgglomerativeClustering(n_clusters=None, linkage='complete')
+        clustering_model.fit_predict(linkage_matrix)
+        return clustering_model.labels_.tolist()
 
     def cluster_hierarchical_average(self, emb_vecs: List) -> List:
         """
@@ -124,7 +171,10 @@ class ClusteringUtils:
         List
             A list containing the cluster index for each input vector.
         """
-        pass
+        linkage_matrix = linkage(np.asarray(emb_vecs), method='average')
+        clustering_model = AgglomerativeClustering(n_clusters=None, linkage='average')
+        clustering_model.fit_predict(linkage_matrix)
+        return clustering_model.labels_.tolist()
 
     def cluster_hierarchical_ward(self, emb_vecs: List) -> List:
         """
@@ -140,7 +190,11 @@ class ClusteringUtils:
         List
             A list containing the cluster index for each input vector.
         """
-        pass
+        linkage_matrix = linkage(np.asarray(emb_vecs), method='ward')
+        clustering_model = AgglomerativeClustering(n_clusters=None, linkage='ward')
+        clustering_model.fit_predict(linkage_matrix)
+        return clustering_model.labels_.tolist()
+
 
     def visualize_kmeans_clustering_wandb(self, data, n_clusters, project_name, run_name):
         """ This function performs K-means clustering on the input data and visualizes the resulting clusters by logging a scatter plot to Weights & Biases (wandb).
@@ -174,15 +228,23 @@ class ClusteringUtils:
         run = wandb.init(project=project_name, name=run_name)
 
         # Perform K-means clustering
+        cent, labels = self.cluster_kmeans(data, n_clusters)
         # TODO
 
         # Plot the clusters
-        # TODO
+        plt.figure(figsize=(8, 6))
+        plt.scatter(data[:, 0], data[:, 1], c=labels)
+        plt.xlabel("Component 1")
+        plt.ylabel("Component 2")
+        plt.title(f"K-Means Clustering (k={n_clusters})")
+        plt.grid(True)
 
         # Log the plot to wandb
+        wandb.log({"K-Means Clustering": wandb.Image(plt)})
         # TODO
 
         # Close the plot display window if needed (optional)
+        plt.close()
         # TODO
         pass
 
@@ -216,10 +278,18 @@ class ClusteringUtils:
         """
         run = wandb.init(project=project_name, name=run_name)
         # Perform hierarchical clustering
-        # TODO
+        linkage_matrix = linkage(data, method=linkage_method)
 
         # Create linkage matrix for dendrogram
-        # TODO
+        plt.figure(figsize=(10, 6))
+        dendrogram(linkage_matrix)
+        plt.xlabel("Sample Index")
+        plt.ylabel("Distance")
+        plt.title(f"Hierarchical Clustering Dendrogram (Linkage: {linkage_method})")
+        plt.grid(True)
+
+        wandb.log({"Hierarchical Clustering Dendrogram": wandb.Image(plt)})
+        plt.close()
         pass
 
     def plot_kmeans_cluster_scores(self, embeddings: List, true_labels: List, k_values: List[int], project_name=None,
@@ -247,17 +317,21 @@ class ClusteringUtils:
         """
         silhouette_scores = []
         purity_scores = []
-        # Calculating Silhouette Scores and Purity Scores for different values of k
+
         for k in k_values:
-            # TODO
+            kmeans = self.cluster_kmeans(embeddings, k)
+            silhouette_scores.append(silhouette_score(embeddings, kmeans.labels_))
+            purity_scores.append(purity_scores(true_labels, kmeans.labels_))
 
-            # Using implemented metrics in clustering_metrics, get the score for each k in k-means clustering
-            # and visualize it.
-            # TODO
-            pass
-
-        # Plotting the scores
-        # TODO
+        plt.figure(figsize=(10, 7))
+        plt.plot(k_values, silhouette_scores, label='Silhouette Score', marker='o')
+        plt.plot(k_values, purity_scores, label='Purity Score', marker='s')
+        plt.xlabel('Number of Clusters (k)')
+        plt.ylabel('Score')
+        plt.title('Cluster Scores vs. Number of Clusters')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
 
         # Logging the plot to wandb
         if project_name and run_name:
@@ -297,11 +371,17 @@ class ClusteringUtils:
         # Compute WCSS values for different K values
         wcss_values = []
         for k in k_values:
-            # TODO
-            pass
+            _, _, wcss = self.cluster_kmeans_WCSS(embeddings,k)
+            wcss_values.append(wcss)
 
         # Plot the elbow method
-        # TODO
+        plt.figure(figsize=(10, 7))
+        plt.plot(k_values, wcss_values, 'bx-')
+        plt.xlabel('Number of Clusters (k)')
+        plt.ylabel('Within-Cluster Sum of Squares (WCSS)')
+        plt.title('Elbow Method for Optimal k')
+        plt.grid(True)
+        plt.show()
 
         # Log the plot to wandb
         wandb.log({"Elbow Method": wandb.Image(plt)})

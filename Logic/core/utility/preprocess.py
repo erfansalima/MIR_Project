@@ -1,3 +1,4 @@
+import json
 import re
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -26,13 +27,17 @@ class Preprocessor:
         List[str]
             The preprocessed documents.
         """
-       # preprocessed_documents = []
-       # for doc in self.documents:
-        #    preprocessed_doc = {}
-         #   for key, value in doc.items():
-          #      preprocessed_doc[key] = self.preprocess_attribute(value)
-           # preprocessed_documents.append(preprocessed_doc)
-        # return preprocessed_documents
+    #    preprocessed_documents = []
+    #    for doc in self.documents:
+    #        preprocessed_doc = {}
+    #        for key, value in doc.items():
+    #            if key in ['first_page_summary', 'summaries', 'synposis', 'reviews', 'writers', 'stars', 'directors']:
+    #                preprocessed_doc[key] = self.preprocess_attribute(value)
+    #            else:
+    #                preprocessed_doc[key] = doc[key]
+    #            preprocessed_documents.append(preprocessed_doc)
+    #    return preprocessed_documents
+
         preprocessed_documents = []
         for document in self.documents:
             preprocessed_value = self.normalize(document)
@@ -155,3 +160,15 @@ class Preprocessor:
         filtered_tokens = [token for token in tokens if token.lower() not in self.stopwords and not any(char.isdigit() for char in token)]
         filtered_tokens = ' '.join(filtered_tokens)
         return filtered_tokens
+
+
+#with open('../IMDB_crawled(preprocessed).json', 'r') as f:
+#    x = json.load(f)
+
+#preprocessor = Preprocessor(x)
+#prep = preprocessor.preprocess()
+
+#with open('../IMDB_crawled(preprocessed).json', 'w') as f:
+#    json.dump(prep, f, indent=4)
+
+

@@ -55,15 +55,16 @@ class Index:
         for document in self.preprocessed_documents:
             document_id = document['id']
             stars = document['stars']
-            names = [word.lower() for name in stars for word in name.split()]
-            for star in stars:
-                star = star.lower()
-                parts = star.split()
-                for part in parts:
-                    self.terms.append(part)
-                    if part not in star_index:
-                        star_index[part] = {}
-                    star_index[part][document_id] = names.count(part)
+            if stars is not None:
+                names = [word.lower() for name in stars for word in name.split()]
+                for star in stars:
+                    star = star.lower()
+                    parts = star.split()
+                    for part in parts:
+                        self.terms.append(part)
+                        if part not in star_index:
+                            star_index[part] = {}
+                        star_index[part][document_id] = names.count(part)
 
         return star_index
 
@@ -105,16 +106,17 @@ class Index:
         for doc in self.preprocessed_documents:
             doc_id = doc['id']
             summaries = doc.get('summaries', [])
-            for summary in summaries:
-                terms = summary.split()
-                term_freq = {}
-                for term in terms:
-                    term_freq[term] = term_freq.get(term, 0) + 1
-                for term, tf in term_freq.items():
-                    if term not in index:
-                        self.terms.append(term)
-                        index[term] = {}
-                    index[term][doc_id] = tf
+            if summaries is not None:
+                for summary in summaries:
+                    terms = summary.split()
+                    term_freq = {}
+                    for term in terms:
+                        term_freq[term] = term_freq.get(term, 0) + 1
+                    for term, tf in term_freq.items():
+                        if term not in index:
+                            self.terms.append(term)
+                            index[term] = {}
+                        index[term][doc_id] = tf
         return index
 
     def get_posting_list(self, word: str, index_type: str):
@@ -398,15 +400,15 @@ class Index:
 
 
 # TODO: Run the class with needed parameters, then run check methods and finally report the results of check methods
-with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\IMDB_crawled(Without null).json', 'r') as f:
+with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\IMDB_crawled(preprocessed).json', 'r') as f:
     movies_dataset = json.load(f)
 
 index = Index(movies_dataset)
-# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index')
-# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.DOCUMENTS.value)
-# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.STARS.value)
-# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.GENRES.value)
-# index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.SUMMARIES.value)
+index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index')
+index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.DOCUMENTS.value)
+index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.STARS.value)
+index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.GENRES.value)
+index.store_index('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\indexer\\index', index_type=Indexes.SUMMARIES.value)
 # index.check_add_remove_is_correct()
 # dummy_document = {
 #            'id': '100',
@@ -421,5 +423,5 @@ index = Index(movies_dataset)
 # path = './index/' + Indexes.DOCUMENTS.value
 # x = index.load_index(path)
 # print(index.check_if_index_loaded_correctly(Indexes.DOCUMENTS.value, x))
-# with open('../terms.json', 'w') as f:
-#    json.dump(index.terms, f)
+with open('../terms.json', 'w') as f:
+    json.dump(index.terms, f)

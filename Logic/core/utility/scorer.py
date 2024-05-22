@@ -295,7 +295,7 @@ class Scorer:
         float
             The Unigram score of the document for the query.
         """
-        query_tfs = self.get_query_tfs(query.split())
+        query_tfs = self.get_query_tfs(query)
 
         score = 0
         if smoothing_method == 'bayes':
@@ -312,7 +312,7 @@ class Scorer:
     def compute_bayes_score(self, query, query_tfs, document_id, document_lengths, alpha):
         score = 0.0
         T = sum(document_lengths.values())
-        for term in query.split():
+        for term in query:
             cf = 0
             if term in self.index and document_id in self.index[term]:
                 tf = self.index[term][document_id]
@@ -330,7 +330,7 @@ class Scorer:
     def compute_naive_score(self, query, query_tfs, document_id, document_lengths):
         score = 0.0
         T = len(self.index)
-        for term in query.split():
+        for term in query:
             if term in self.index and document_id in self.index[term]:
                 tf = self.index[term][document_id]
             else:
@@ -343,7 +343,7 @@ class Scorer:
         score = 0.0
         T = sum(document_lengths.values())
         doc_length = document_lengths[document_id]
-        for term in query.split():
+        for term in query:
             cf = 0
             if term in self.index and document_id in self.index[term]:
                 tf = self.index[term][document_id]

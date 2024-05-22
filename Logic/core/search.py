@@ -128,9 +128,9 @@ class SearchEngine:
             for tier in ["first_tier", "second_tier", "third_tier"]:
                 scorer = Scorer(self.tiered_index[field].index[tier], self.metadata_index.index.get("document_count"))
                 if (method == 'OkapiBM25'):
-                    scores[field].update(scorer.compute_socres_with_okapi_bm25(query, self.metadata_index.index["averge_document_length"][field.value], self.document_lengths_index[field].index))
+                    scores[field].update(scorer.compute_socres_with_okapi_bm25(query.split(), self.metadata_index.index["averge_document_length"][field.value], self.document_lengths_index[field].index))
                 else:
-                    scores[field].update(scorer.compute_scores_with_vector_space_model(query, method))
+                    scores[field].update(scorer.compute_scores_with_vector_space_model(query.split(), method))
                 if max_results != -1 & len(scores[field]) > max_results:
                     break
 
@@ -153,9 +153,9 @@ class SearchEngine:
             scores[field] = {}
             scorer = Scorer(self.document_indexes[field].index, self.metadata_index.index.get("document_count"))
             if (method == 'OkapiBM25'):
-                scores[field] = scorer.compute_socres_with_okapi_bm25(query, self.metadata_index.index["averge_document_length"][field.value], self.document_lengths_index[field].index)
+                scores[field] = scorer.compute_socres_with_okapi_bm25(query.split(), self.metadata_index.index["averge_document_length"][field.value], self.document_lengths_index[field].index)
             else:
-                scores[field] = scorer.compute_scores_with_vector_space_model(query, method)
+                scores[field] = scorer.compute_scores_with_vector_space_model(query.split(), method)
 
     def find_scores_with_unigram_model(
             self, query, smoothing_method, weights, scores, alpha=0.5, lamda=0.5
@@ -182,7 +182,7 @@ class SearchEngine:
         for field in weights:
             scores[field] = {}
             scorer = Scorer(self.document_indexes[field].index, self.metadata_index.index.get("document_count"))
-            scores[field] = scorer.compute_score_with_unigram_model(query, smoothing_method, self.document_lengths_index[field].index, alpha, lamda)
+            scores[field] = scorer.compute_score_with_unigram_model(query.split(), smoothing_method, self.document_lengths_index[field].index, alpha, lamda)
     def merge_scores(self, scores1, scores2):
         """
         Merges two dictionaries of scores.

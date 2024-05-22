@@ -50,8 +50,9 @@ class Metadata_index:
         """
         sum = 0
         for movie in self.documents.values():
-            for part in movie[where]:
-                sum += len(part.split())
+            if movie[where] is not None:
+                for part in movie[where]:
+                    sum += len(part.split())
 
         return sum / len(self.documents)
 

@@ -9,7 +9,7 @@ import json
 with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\terms.json', 'r') as f:
     terms = json.load(f)
 
-with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\IMDB_crawled(Without null).json', 'r') as f:
+with open('D:\\uni\\term6\\MY\\MIR\\Project\\MIR_Project\\Logic\\core\\IMDB_crawled(preprocessed).json', 'r') as f:
     movies_dataset = json.load(f)
 
 search_engine = SearchEngine()
@@ -29,9 +29,8 @@ def correct_text(text: str, all_documents: List[str]) -> str:
     str
         The corrected form of the given text
     """
-    preprocess = Preprocessor(all_documents)
-    all_documents = preprocess.preprocess()
-    all_documents.append(' '.join(list(preprocess.stopwords)))
+    prep = Preprocessor(all_documents)
+    all_documents.append(' '.join(list(prep.stopwords)))
     spell_correction_obj = SpellCorrection(all_documents)
     text = spell_correction_obj.spell_check(text)
     return text

@@ -35,10 +35,10 @@ class LinkAnalyzer:
             movie_id = movie["id"]
             self.graph.add_node(movie_id)
             self.hubs.add(movie_id)
-            for star in movie["stars"]:
-                self.graph.add_edge(movie_id, star)
-                self.authorities.add(star)
-
+            if movie['stars'] is not None:
+                for star in movie["stars"]:
+                    self.graph.add_edge(movie_id, star)
+                    self.authorities.add(star)
     def expand_graph(self, corpus):
         """
         expand hubs, authorities and graph using given corpus
@@ -57,12 +57,13 @@ class LinkAnalyzer:
         """
         for movie in corpus:
             movie_id = movie["id"]
-            for star in movie["stars"]:
-                if any(star in root_movie["stars"] for root_movie in self.root_set):
-                    self.graph.add_node(movie_id)
-                    self.graph.add_edge(movie_id, star)
-                    self.authorities.add(star)
-                    self.hubs.add(movie_id)
+            if movie["stars"] is not None:
+                for star in movie["stars"]:
+                    if any(star in root_movie["stars"] for root_movie in self.root_set):
+                        self.graph.add_node(movie_id)
+                        self.graph.add_edge(movie_id, star)
+                        self.authorities.add(star)
+                        self.hubs.add(movie_id)
 
     def hits(self, num_iteration=5, max_result=10):
         """

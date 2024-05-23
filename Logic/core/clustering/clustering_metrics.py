@@ -29,7 +29,6 @@ class ClusteringMetrics:
         """
         return silhouette_score(embeddings, cluster_labels)
 
-
     def purity_score(self, true_labels: List, cluster_labels: List) -> float:
         """
         Calculate the purity score for the given cluster assignments and ground truth labels.

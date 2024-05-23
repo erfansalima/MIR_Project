@@ -27,7 +27,6 @@ class DimensionReduction:
         self.pca = PCA(n_components=n_components)
         reduced_embeddings = self.pca.fit_transform(embeddings)
         return reduced_embeddings
-        pass
 
     def convert_to_2d_tsne(self, emb_vecs):
         """

@@ -1,8 +1,10 @@
+import json
 import tempfile
 
 import fasttext
 import re
 
+import numpy as np
 from tqdm import tqdm
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -194,7 +196,8 @@ if __name__ == "__main__":
     ft_data_loader = FastTextDataLoader(path)
 
     X, y = ft_data_loader.create_train_data()
-
+    np.savez('arrays.npz', arr1=X, arr2=y)
+    print('siiiuuuu')
     ft_model.train(X)
     ft_model.prepare(None, mode = "save")
     ft_model.save_model()

@@ -80,15 +80,16 @@ class FastTextDataLoader:
             The preprocessed text.
         """
         x = ''
-        for text in text:
-            text = ' '.join(text)
-            text = text.lower()
-            text = text.translate(str.maketrans('', '', string.punctuation))
-            tokens = word_tokenize(text)
-            stop_words = set(stopwords.words('english'))
-            filtered_tokens = [token for token in tokens if token not in stop_words]
-            preprocessed_text = ' '.join(filtered_tokens)
-            x += preprocessed_text
+        if text is not None:
+            for text in text:
+                text = ' '.join(text)
+                text = text.lower()
+                text = text.translate(str.maketrans('', '', string.punctuation))
+                tokens = word_tokenize(text)
+                stop_words = set(stopwords.words('english'))
+                filtered_tokens = [token for token in tokens if token not in stop_words]
+                preprocessed_text = ' '.join(filtered_tokens)
+                x += preprocessed_text
 
         return x
 
@@ -105,8 +106,21 @@ class FastTextDataLoader:
             df[f'preprocessed_{col}'] = df[col].apply(self.preprocess_text)
 
         label_encoder = LabelEncoder()
-        df['encoded_genre'] = label_encoder.fit_transform(df['genre'].astype(str))
+        first_genre = []
+
+        # Iterate over each element in the 'genre' column and extract the first character
+        for genre in df['genre']:
+            if len(genre) > 0:
+                first_genre.append(genre[0])
+            else:
+                first_genre.append('nothing')
+
+        df['encode_genre'] = first_genre
+        df['encoded_genre'] = label_encoder.fit_transform(df['encode_genre'].astype(str))
         X = df['preprocessed_reviews'].values.astype(str)
         y = df['encoded_genre'].values
+        X = X[:1000]
+        y = y[:1000]
+        print(y)
 
         return X, y

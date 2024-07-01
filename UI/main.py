@@ -1,3 +1,6 @@
+from bs4 import BeautifulSoup
+import requests
+import numpy as np
 import streamlit as st
 import sys
 
@@ -21,6 +24,44 @@ class color(Enum):
     WHITE = "#FFFFFF"
     CYAN = "#00FFFF"
     MAGENTA = "#FF00FF"
+
+
+def fetch_webpage(url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}
+    session = requests.Session()
+    session.headers.update(headers)
+    try:
+        response = session.get(url)
+        response.raise_for_status()
+        return response.content
+    except requests.exceptions.RequestException as e:
+        print(e)
+        return None
+
+
+def extract_image_url(soup):
+    div = soup.find('div', class_='ipc-media__img')
+    if div:
+        tag = div.find('img')
+        if tag and 'src' in tag.attrs:
+            return tag['src']
+        else:
+            print("tag not found.")
+    else:
+        print("div not found.")
+    return np.nan
+
+
+def get_Image(url):
+    webpage_content = fetch_webpage(url)
+    if webpage_content:
+        soup = BeautifulSoup(webpage_content, "html.parser")
+        image_url = extract_image_url(soup)
+    else:
+        image_url = np.nan
+
+    return image_url
 
 
 def get_top_x_movies_by_rank(x: int, results: list):
@@ -125,7 +166,7 @@ def search_handling(
                             unsafe_allow_html=True,
                         )
             with card[1].container():
-                st.image(info["Image_URL"], use_column_width=True)
+                st.image(get_Image(info['URL']), use_column_width=True)
 
             st.divider()
         return
@@ -195,7 +236,7 @@ def search_handling(
                             unsafe_allow_html=True,
                         )
             with card[1].container():
-                st.image(info["Image_URL"], use_column_width=True)
+                st.image(get_Image(info['URL']), use_column_width=True)
 
             st.divider()
 
